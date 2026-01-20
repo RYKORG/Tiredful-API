@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-#   ____  __  ___   ___  ___  ___  _  _  __       __   ___  __
-#  (_  _)(  )(  ,) (  _)(   \(  _)( )( )(  )     (  ) (  ,\(  )
-#   )(   )(  )  \  ) _) ) ) )) _) )()(  )(__    /__\  ) _/ )(
-#  (__) (__)(_)\_)(___)(___/(_)   \__/ (____)  (_)(_)(_)  (__)
+#    ____  __  ___   ___  ___  ___  _  _  __       __   ___  __
+#   (_  _)(  )(  ,) (  _)(   \(  _)( )( )(  )     (  ) (  ,\(  )
+#    )(   )(  )  \  ) _) ) ) )) _) )()(  )(__    /__\  ) _/ )(
+#   (__) (__)(_)\_)(___)(___/(_)   \__/ (____)  (_)(_)(_)  (__)
 #
 #
 # Copyright (C) 2017-2018 Payatu Software Labs
@@ -44,17 +44,23 @@ def get_activity(request):
                 month_requested = request.data['month']
                 try:
                     activity_detail = Tracker.objects.raw(
-                        'Select * from health_tracker where month=%s' % month_requested)
+                        "SELECT * FROM health_tracker WHERE month = '%s'" % month_requested
+                    )
+                    
                     final_serialized_data = []
                     for activity in activity_detail:
                         serializer = TrackerSerializers(activity)
                         final_serialized_data.append(serializer.data)
                     return Response(final_serialized_data)
+                
                 except Tracker.DoesNotExist:
                     return Response(status=status.HTTP_404_NOT_FOUND)
+                
                 except ValueError:
                     cursor = connection.cursor()
-                    cursor.execute('Select * from health_tracker where month=%s' % month_requested)
+                    query = "SELECT * FROM health_tracker WHERE month = " + month_requested
+                    cursor.execute(query) 
+                    
                     activity_detail = cursor.fetchall()
                     return JsonResponse(activity_detail, safe=False)
             else:
