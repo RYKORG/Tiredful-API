@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-#   ____  __  ___   ___  ___  ___  _  _  __       __   ___  __
-#  (_  _)(  )(  ,) (  _)(   \(  _)( )( )(  )     (  ) (  ,\(  )
-#   )(   )(  )  \  ) _) ) ) )) _) )()(  )(__    /__\  ) _/ )(
-#  (__) (__)(_)\_)(___)(___/(_)   \__/ (____)  (_)(_)(_)  (__)
+#    ____  __  ___   ___  ___  ___  _  _  __       __   ___  __
+#   (_  _)(  )(  ,) (  _)(   \(  _)( )( )(  )     (  ) (  ,\(  )
+#    )(   )(  )  \  ) _) ) ) )) _) )()(  )(__    /__\  ) _/ )(
+#   (__) (__)(_)\_)(___)(___/(_)   \__/ (____)  (_)(_)(_)  (__)
 #
 #
 # Copyright (C) 2017-2018 Payatu Software Labs
@@ -22,11 +22,11 @@ from library.models import Book
 from library.serializers import BookSerializer
 
 
-# API for showing book details - leaking system information
-@api_view(['GET'])
+# API for showing and updating book details
+@api_view(['GET', 'PATCH'])
 def book_detail(request, ISBN):
     """
-    Get details of specific book
+    Get or update details of specific book
     """
     try:
         book = Book.objects.get(ISBN=ISBN)
@@ -39,6 +39,15 @@ def book_detail(request, ISBN):
     if request.method == 'GET':
         serializer = BookSerializer(book)
         return Response(serializer.data)
+
+    elif request.method == 'PATCH':
+        quantity = request.data.get('quantity')
+        if quantity is not None:
+            book.quantity = quantity
+            book.save()
+            return Response(BookSerializer(book).data)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
